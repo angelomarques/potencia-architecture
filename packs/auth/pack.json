@@ -1,0 +1,19 @@
+{
+  "name": "auth",
+  "description": "better-auth email/password + session helpers",
+  "default": true,
+  "dependsOn": [
+    "d1"
+  ],
+  "dependencies": {
+    "better-auth": "^1.3.0",
+    "drizzle-orm": "^0.44.0"
+  },
+  "env": {
+    "server": {
+      "BETTER_AUTH_SECRET": "z.string().min(16)",
+      "BETTER_AUTH_URL": "z.string().url()"
+    },
+    "client": {}
+  }
+}

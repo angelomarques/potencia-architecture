@@ -1,0 +1,8 @@
+name = "potencia-queues"
+main = "src/index.ts"
+compatibility_date = "2025-09-01"
+
+[[queues.consumers]]
+queue = "potencia-jobs"
+max_batch_size = 10
+max_batch_timeout = 5

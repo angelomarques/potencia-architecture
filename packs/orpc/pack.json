@@ -1,0 +1,14 @@
+{
+  "name": "orpc",
+  "description": "oRPC typed API router + Next route handler",
+  "default": true,
+  "dependencies": {
+    "@orpc/server": "^1.10.0",
+    "@orpc/client": "^1.10.0",
+    "zod": "^4.1.0"
+  },
+  "env": {
+    "server": {},
+    "client": {}
+  }
+}

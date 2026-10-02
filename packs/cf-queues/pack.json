@@ -1,0 +1,12 @@
+{
+  "name": "cf-queues",
+  "description": "Cloudflare Queues consumer worker stub (no dead code unless enabled)",
+  "default": false,
+  "dependencies": {},
+  "env": {
+    "server": {
+      "CF_QUEUE_NAME": "z.string().min(1).optional()"
+    },
+    "client": {}
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "turnstile",
+  "description": "Cloudflare Turnstile widget + server verify",
+  "default": true,
+  "dependencies": {},
+  "env": {
+    "server": {
+      "TURNSTILE_SECRET_KEY": "z.string().min(1)"
+    },
+    "client": {
+      "NEXT_PUBLIC_TURNSTILE_SITE_KEY": "z.string().min(1)"
+    }
+  }
+}

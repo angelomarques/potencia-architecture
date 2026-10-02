@@ -1,17 +1,13 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies (patterns without a leading / apply in any nested folder)
+# dependencies
 node_modules/
 .pnp
 .pnp.*
-**/.yarn/*
-!**/.yarn/patches
-!**/.yarn/plugins
-!**/.yarn/releases
-!**/.yarn/versions
 
 # testing
 coverage/
+playwright-report/
+test-results/
+artifacts/
 
 # next.js
 .next/
@@ -19,6 +15,7 @@ out/
 
 # production
 build/
+dist/
 
 # misc
 .DS_Store
@@ -30,8 +27,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files — keep .env.example
+.env
+.env.*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +38,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# scaffold dry-runs
+.tmp-scaffold/

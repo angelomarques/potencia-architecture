@@ -1,0 +1,10 @@
+{
+  "orpc": true,
+  "auth": true,
+  "posthog": true,
+  "turnstile": true,
+  "d1": true,
+  "redis": true,
+  "cf-cron": false,
+  "cf-queues": false
+}

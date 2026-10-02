@@ -1,0 +1,12 @@
+{
+  "name": "cf-cron",
+  "description": "Cloudflare Worker with cron trigger stub (separate from Next)",
+  "default": false,
+  "dependencies": {},
+  "env": {
+    "server": {
+      "CRON_SECRET": "z.string().min(1).optional()"
+    },
+    "client": {}
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "d1",
+  "description": "Cloudflare D1 via REST/HTTP + Drizzle sqlite-proxy",
+  "default": true,
+  "dependencies": {
+    "drizzle-orm": "^0.44.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.0",
+    "@cloudflare/workers-types": "^4.20250901.0"
+  },
+  "env": {
+    "server": {
+      "CLOUDFLARE_ACCOUNT_ID": "z.string().min(1)",
+      "CLOUDFLARE_API_TOKEN": "z.string().min(1)",
+      "D1_DATABASE_ID": "z.string().min(1)"
+    },
+    "client": {}
+  }
+}

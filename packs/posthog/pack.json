@@ -1,0 +1,15 @@
+{
+  "name": "posthog",
+  "description": "PostHog browser analytics provider",
+  "default": true,
+  "dependencies": {
+    "posthog-js": "^1.260.0"
+  },
+  "env": {
+    "server": {},
+    "client": {
+      "NEXT_PUBLIC_POSTHOG_KEY": "z.string().min(1).optional()",
+      "NEXT_PUBLIC_POSTHOG_HOST": "z.string().url().optional()"
+    }
+  }
+}
