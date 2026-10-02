@@ -1,15 +1,18 @@
 {
   "name": "posthog",
-  "description": "PostHog browser analytics provider",
+  "description": "PostHog browser + server analytics (shared project; unique EVENT_PREFIX per app)",
   "default": true,
   "dependencies": {
-    "posthog-js": "^1.260.0"
+    "posthog-js": "^1.260.0",
+    "posthog-node": "^4.0.0",
+    "server-only": "^0.0.1"
   },
   "env": {
     "server": {},
     "client": {
       "NEXT_PUBLIC_POSTHOG_KEY": "z.string().min(1).optional()",
-      "NEXT_PUBLIC_POSTHOG_HOST": "z.string().url().optional()"
+      "NEXT_PUBLIC_POSTHOG_HOST": "z.string().url().optional()",
+      "NEXT_PUBLIC_EVENT_PREFIX": "z.string().min(1).max(16).default(\"app\")"
     }
   }
 }

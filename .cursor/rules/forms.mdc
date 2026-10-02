@@ -1,0 +1,67 @@
+---
+description: Always build forms with react-hook-form + zod + shadcn Form
+globs: **/*.{tsx,ts,jsx,js}
+alwaysApply: true
+---
+
+# Forms (required)
+
+Every interactive form in Potencia apps MUST use:
+
+1. **zod** schema for validation
+2. **react-hook-form** with `zodResolver` from `@hookform/resolvers/zod`
+3. **shadcn Form** primitives from `@/components/ui/form`:
+   - `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormMessage` (and `FormDescription` when helpful)
+4. **shadcn** `Input` / `Button` (or other ui/*) inside `FormControl` — never raw uncontrolled `<input>` paired with `useState` for form fields
+
+Do **not** use plain `useState` field bags + `<form onSubmit>` for validated forms.
+
+Reference example: `src/app/(auth)/sign-in/page.tsx`.
+
+```tsx
+"use client";
+
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form, FormField, FormItem, FormLabel, FormControl, FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+type Values = z.infer<typeof schema>;
+
+export function ExampleForm() {
+  const form = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(async (values) => { /* ... */ })}>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Submit</Button>
+      </form>
+    </Form>
+  );
+}
+```

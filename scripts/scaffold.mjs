@@ -140,6 +140,8 @@ function mergePackageDeps(destPkgPath, enabled) {
   pkg.devDependencies = pkg.devDependencies ?? {};
   // Start from a minimal core set, then add pack deps
   const coreDeps = {
+    "@hookform/resolvers": "^5.2.0",
+    "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-slot": "^1.2.3",
     "@t3-oss/env-nextjs": "^0.13.8",
     "class-variance-authority": "^0.7.1",
@@ -148,6 +150,7 @@ function mergePackageDeps(destPkgPath, enabled) {
     next: "^15.5.0",
     react: "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-hook-form": "^7.62.0",
     "tailwind-merge": "^3.3.1",
     zod: "^4.1.0",
   };
@@ -190,6 +193,52 @@ function writeEnabledManifest(destRoot, enabled, all) {
     path.join(destRoot, "potencia.packs.json"),
     JSON.stringify(manifest, null, 2) + "\n",
   );
+}
+
+
+/** Derive a short unique PostHog EVENT_PREFIX from an app name.
+ *  kingdom-movies → km, potencia-dashboard → pd, myapp → mya
+ */
+function deriveEventPrefix(name) {
+  const slug = String(name || "app")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  const parts = slug.split("-").filter(Boolean);
+  let prefix;
+  if (parts.length >= 2) {
+    prefix = parts.map((p) => p[0]).join("");
+  } else {
+    prefix = (parts[0] || "app").slice(0, 3);
+  }
+  prefix = prefix.replace(/[^a-z0-9]/g, "").slice(0, 8);
+  if (!/^[a-z]/.test(prefix)) prefix = `a${prefix}`;
+  return prefix || "app";
+}
+
+function applyEventPrefix(destRoot, appName) {
+  const prefix = deriveEventPrefix(appName);
+  const envExample = path.join(destRoot, ".env.example");
+  if (fs.existsSync(envExample)) {
+    let envText = fs.readFileSync(envExample, "utf8");
+    if (/^NEXT_PUBLIC_EVENT_PREFIX=.*/m.test(envText)) {
+      envText = envText.replace(
+        /^NEXT_PUBLIC_EVENT_PREFIX=.*/m,
+        `NEXT_PUBLIC_EVENT_PREFIX=${prefix}`,
+      );
+    } else {
+      envText += `\nNEXT_PUBLIC_EVENT_PREFIX=${prefix}\n`;
+    }
+    fs.writeFileSync(envExample, envText);
+  }
+  const packsPath = path.join(destRoot, "potencia.packs.json");
+  if (fs.existsSync(packsPath)) {
+    const manifest = JSON.parse(fs.readFileSync(packsPath, "utf8"));
+    manifest.eventPrefix = prefix;
+    fs.writeFileSync(packsPath, JSON.stringify(manifest, null, 2) + "\n");
+  }
+  console.log(`[scaffold] NEXT_PUBLIC_EVENT_PREFIX=${prefix} (from name "${appName}")`);
+  return prefix;
 }
 
 function main() {
@@ -254,6 +303,7 @@ Available packs: ${listPacks().join(", ")}
   fs.writeFileSync(path.join(dest, "package.json"), JSON.stringify(pkg, null, 2) + "\n");
 
   writeEnabledManifest(dest, enabled, all);
+  applyEventPrefix(dest, args.name);
 
   // Drop template-only scaffold docs noise? keep packs/ so apps can re-enable later.
   console.log("[scaffold] next: cd", dest, "&& pnpm install && pnpm dev");

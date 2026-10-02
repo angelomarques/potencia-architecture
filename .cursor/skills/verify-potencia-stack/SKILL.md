@@ -8,6 +8,9 @@ Doctor + smoke for the potencia-stack template (and scaffolded apps).
 - `pnpm-only` — packageManager field + lockfile
 - `scaffold-auth-redis` — scaffold with auth+redis without cf-queues
 - `health-route` — `/api/health` returns ok
+- `forms-rule` — `.cursor/rules/forms.mdc` + shadcn Form + RHF sign-in
+- `analytics-module` — `src/lib/analytics.ts` with EVENT_PREFIX from env (not hardcoded `lw`)
+- `event-prefix-env` — `NEXT_PUBLIC_EVENT_PREFIX` in `src/env.ts` + `.env.example`
 
 ## Scripts
 - `scripts/doctor.sh` — static checks

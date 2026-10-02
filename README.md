@@ -60,7 +60,7 @@ pnpm scaffold -- --name my-app --packs orpc,auth,redis,turnstile,d1,posthog
 2. Follow `.cursor/skills/new-potencia-stack/SKILL.md`.
 3. Run `pnpm scaffold` with the requested packs.
 4. `gh repo create <name> --private` + push; link Vercel; copy env from `.env.example` (never paste secret values into chat).
-5. Verify with `.cursor/skills/verify-potencia-stack/` (`pnpm doctor` / `pnpm smoke`).
+5. Verify with `.cursor/skills/verify-potencia-stack/` (`pnpm run doctor` / `pnpm smoke`).
 
 ## Develop this template
 
@@ -68,11 +68,30 @@ pnpm scaffold -- --name my-app --packs orpc,auth,redis,turnstile,d1,posthog
 pnpm install
 pnpm dev          # http://localhost:3000
 pnpm build        # uses SKIP_ENV_VALIDATION=true
-pnpm doctor
+pnpm run doctor
 pnpm smoke
 ```
 
 `src/env.ts` is imported from `next.config.ts` so invalid env fails the build unless `SKIP_ENV_VALIDATION=true`.
+
+
+
+## Forms (required)
+
+Agents and humans must build forms with **react-hook-form + zod + shadcn Form**.
+
+- Cursor rule: `.cursor/rules/forms.mdc` (`alwaysApply`)
+- UI: `src/components/ui/form.tsx`, `input.tsx`, `label.tsx`
+- Example: `src/app/(auth)/sign-in/page.tsx` (no signup page in the template MVP)
+
+## Analytics (PostHog)
+
+- Browser: `src/components/analytics/posthog-provider.tsx` (`posthog-js`)
+- Server: `src/lib/analytics.ts` — `Analytics.track` / `identify` / `shutdown` / `isInitialized` (`posthog-node`, `server-only`)
+- Shared PostHog project is fine; events are namespaced with **`NEXT_PUBLIC_EVENT_PREFIX`**
+- Template default prefix: `app`
+- On mint, scaffold sets a unique short prefix from `--name` (e.g. `kingdom-movies` → `km`, `potencia-dashboard` → `pd`) into `.env.example` and `potencia.packs.json`
+- Skill: `.cursor/skills/new-potencia-stack/SKILL.md` documents the prefix step
 
 ## Deploy
 
