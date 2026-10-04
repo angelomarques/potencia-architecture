@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { env } from "@/env";
+import { HelpCenterDialog } from "@/components/help-center-dialog";
 
 /**
  * Starter shell only — do not invent product UI here.
@@ -18,13 +19,14 @@ export default function Home() {
           posthog. Cloudflare workers only when cron/queues packs are enabled.
         </p>
       </div>
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <Button asChild>
           <a href="/api/health">Health</a>
         </Button>
         <Button variant="outline" asChild>
           <a href="https://github.com/angelomarques/potencia-stack">Template repo</a>
         </Button>
+        <HelpCenterDialog trigger={<Button variant="outline">Help</Button>} />
       </div>
     </main>
   );
