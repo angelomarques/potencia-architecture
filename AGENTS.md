@@ -13,6 +13,7 @@
 ## Skills
 - `.cursor/skills/new-potencia-stack/` — mint a new app from this template
 - `.cursor/skills/verify-potencia-stack/` — doctor + smoke
+- `.cursor/skills/design-system-landing/` — new visual design system or marketing / local-business landing (DESIGN.md first)
 
 ## Scaffold
 `pnpm scaffold -- --name <app> [--with-<pack>|--without-<pack>|--packs a,b]`
