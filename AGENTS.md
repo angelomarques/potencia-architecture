@@ -5,6 +5,7 @@
 - Env lives in **`src/env.ts`** (`@t3-oss/env-nextjs` + zod). Packs extend `server` / `client` when enabled.
 - **Forms:** always **react-hook-form + zod + shadcn Form** — see `.cursor/rules/forms.mdc`. Example: `src/app/(auth)/sign-in/page.tsx`.
 - **Analytics:** server `Analytics` in `src/lib/analytics.ts` (posthog-node). Events use `NEXT_PUBLIC_EVENT_PREFIX` (unique per app; scaffold derives from `--name`). Never hardcode `lw`.
+- **Help forms:** server event `${prefix}_help_center_submitted` with `email`/`message`/`accountEmail` → shows in potencia-dashboard. See `.cursor/rules/help-form.mdc`.
 - Never paste secret values into chat, commits, or PRs.
 - Do not invent product UI in this template.
 - Prefer SSH for git: `GIT_SSH_COMMAND='ssh -i /home/box/agent-data/secrets/ssh/id_ed25519_github -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new'`.
@@ -13,6 +14,7 @@
 ## Skills
 - `.cursor/skills/new-potencia-stack/` — mint a new app from this template
 - `.cursor/skills/verify-potencia-stack/` — doctor + smoke
+- `.cursor/skills/help-form/` — help/support form that appears in potencia-dashboard Help Center
 - `.cursor/skills/design-system-landing/` — new visual design system or marketing / local-business landing (DESIGN.md first)
 
 ## Scaffold

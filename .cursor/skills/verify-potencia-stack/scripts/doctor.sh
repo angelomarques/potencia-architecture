@@ -51,6 +51,14 @@ check event-prefix-env grep -q 'NEXT_PUBLIC_EVENT_PREFIX' src/env.ts
 check event-prefix-example grep -q 'NEXT_PUBLIC_EVENT_PREFIX' .env.example
 check scaffold-event-prefix grep -q 'deriveEventPrefix' scripts/scaffold.mjs
 
+# Help center (potencia-dashboard contract)
+check help-center-skill test -f .cursor/skills/help-form/SKILL.md
+check help-center-rule test -f .cursor/rules/help-form.mdc
+check help-center-schema test -f src/lib/validation/help-center.ts
+check help-center-dialog grep -q 'helpCenterSubmit' src/components/help-center-dialog.tsx
+check help-center-event grep -q '"help_center_submitted"' src/lib/orpc/router.ts
+check help-center-accountEmail grep -q 'accountEmail' src/lib/orpc/router.ts
+
 if grep -R --include='*.md' --include='*.mjs' --include='*.json' -n 'potencia-web' . 2>/dev/null | grep -v node_modules | grep -v '.git' | head -5; then
   echo "FAIL name-potencia-web-references"
   fail=1
