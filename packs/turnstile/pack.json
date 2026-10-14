@@ -1,14 +1,18 @@
 {
   "name": "turnstile",
-  "description": "Cloudflare Turnstile widget + server verify",
+  "description": "Cloudflare Turnstile widget + server verify (+ opt-in QA bypass)",
   "default": true,
   "dependencies": {},
   "env": {
     "server": {
-      "TURNSTILE_SECRET_KEY": "z.string().min(1)"
+      "TURNSTILE_SECRET_KEY": "z.string().min(1)",
+      "QA_BYPASS_SECRET": "z.string().min(32).optional()"
     },
     "client": {
       "NEXT_PUBLIC_TURNSTILE_SITE_KEY": "z.string().min(1)"
     }
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
   }
 }
