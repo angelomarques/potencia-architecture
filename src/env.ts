@@ -27,6 +27,8 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_APP_NAME: z.string().default("Potencia App"),
+    // ── http: base URL for the internal axios client (src/lib/http/internal.ts) ──
+    NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
     // ── posthog pack: unique short prefix per minted app (scaffold sets this) ──
     NEXT_PUBLIC_EVENT_PREFIX: z
       .string()
@@ -54,6 +56,7 @@ export const env = createEnv({
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     RATE_LIMIT_PER_MINUTE: process.env.RATE_LIMIT_PER_MINUTE,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_EVENT_PREFIX: process.env.NEXT_PUBLIC_EVENT_PREFIX,
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,

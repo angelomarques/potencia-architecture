@@ -1,6 +1,8 @@
 "use client";
 
 import { createORPCClient } from "@orpc/client";
+// HTTP exception (see .cursor/rules/http-axios.mdc): oRPC's RPCLink is fetch-based
+// (streaming / event iterators / AbortSignal). Do not wrap it in an axios adapter.
 import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import type { AppRouter } from "./router";

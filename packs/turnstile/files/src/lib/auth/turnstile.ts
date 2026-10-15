@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { http } from "@/lib/http";
 
 export async function verifyTurnstileToken(
   token: string,
@@ -15,14 +16,12 @@ export async function verifyTurnstileToken(
   body.set("response", token);
   if (ip) body.set("remoteip", ip);
 
-  const res = await fetch(
+  // siteverify is a POST but safe to retry: a token can only be redeemed once,
+  // and a retry after a lost response just yields success=false (fail closed).
+  const { data } = await http.post<{ success?: boolean }>(
     "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body,
-    },
+    body,
+    { headers: { "Content-Type": "application/x-www-form-urlencoded" }, retry: 1 },
   );
-  const data = (await res.json()) as { success?: boolean };
   return Boolean(data.success);
 }
