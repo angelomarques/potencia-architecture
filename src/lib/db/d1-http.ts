@@ -2,6 +2,12 @@
  * Cloudflare D1 via REST/HTTP API — works on Vercel (no Workers binding).
  */
 import { env } from "@/env";
+import { createExternalClient, HttpError } from "@/lib/http";
+
+const cloudflare = createExternalClient({
+  baseURL: "https://api.cloudflare.com/client/v4",
+  timeout: 15_000,
+});
 
 type D1Result = {
   success: boolean;
@@ -18,6 +24,21 @@ function requireEnv(name: keyof typeof env, value: string | undefined): string {
   return value;
 }
 
+/** POST to the D1 query endpoint. Writes are not retried (POST is non-idempotent). */
+async function postD1(path: string, token: string, payload: unknown): Promise<D1Result> {
+  try {
+    const { data } = await cloudflare.post<D1Result>(path, payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return data;
+  } catch (err) {
+    if (err instanceof HttpError && err.data && typeof err.data === "object") {
+      return { ...(err.data as D1Result), success: false };
+    }
+    throw err;
+  }
+}
+
 export async function d1Query<T = Record<string, unknown>>(
   sql: string,
   params: unknown[] = [],
@@ -26,22 +47,13 @@ export async function d1Query<T = Record<string, unknown>>(
   const dbId = requireEnv("D1_DATABASE_ID", env.D1_DATABASE_ID);
   const token = requireEnv("CLOUDFLARE_API_TOKEN", env.CLOUDFLARE_API_TOKEN);
 
-  const res = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${dbId}/query`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ sql, params }),
-      cache: "no-store",
-    },
+  const data = await postD1(
+    `/accounts/${accountId}/d1/database/${dbId}/query`,
+    token,
+    { sql, params },
   );
-
-  const data = (await res.json()) as D1Result;
-  if (!res.ok || !data.success) {
-    const msg = data.errors?.[0]?.message ?? `D1 query failed (${res.status})`;
+  if (!data.success) {
+    const msg = data.errors?.[0]?.message ?? "D1 query failed";
     throw new Error(msg);
   }
   const batch = data.result?.[0];
@@ -58,23 +70,13 @@ export async function d1Batch(
   const dbId = requireEnv("D1_DATABASE_ID", env.D1_DATABASE_ID);
   const token = requireEnv("CLOUDFLARE_API_TOKEN", env.CLOUDFLARE_API_TOKEN);
 
-  const res = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${dbId}/query`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(
-        statements.map((s) => ({ sql: s.sql, params: s.params ?? [] })),
-      ),
-      cache: "no-store",
-    },
+  const data = await postD1(
+    `/accounts/${accountId}/d1/database/${dbId}/query`,
+    token,
+    statements.map((s) => ({ sql: s.sql, params: s.params ?? [] })),
   );
-  const data = (await res.json()) as D1Result;
-  if (!res.ok || !data.success) {
-    const msg = data.errors?.[0]?.message ?? `D1 batch failed (${res.status})`;
+  if (!data.success) {
+    const msg = data.errors?.[0]?.message ?? "D1 batch failed";
     throw new Error(msg);
   }
 }
