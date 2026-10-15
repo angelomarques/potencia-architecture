@@ -1,0 +1,27 @@
+---
+description: Always use axios (via @/lib/http) for HTTP requests — internal and external
+globs: **/*.{tsx,ts,jsx,js}
+alwaysApply: true
+---
+
+# HTTP requests: axios only (required)
+
+Every HTTP request written in Potencia apps MUST go through the shared axios clients in `src/lib/http/`:
+
+- **External APIs** (Cloudflare, Turnstile, Resend, PostHog REST, any third party):
+  `import { http, createExternalClient } from "@/lib/http"`.
+  10s timeout, retries idempotent methods (GET/HEAD/OPTIONS/PUT/DELETE) on network errors, 408/425/429/5xx with backoff.
+  POSTs are NOT retried unless you pass `{ retry: n }` and the call is safe to repeat. Disable with `{ retry: false }`.
+  Use `createExternalClient({ baseURL, timeout })` for a per-service client.
+- **Internal routes** (`/api/*` of this app): `import { api } from "@/lib/http"`.
+  `baseURL` = browser origin, or `NEXT_PUBLIC_APP_URL` on the server; `withCredentials: true`.
+- **Errors**: all clients throw `HttpError` (`status`, `code`, `data`, `isTimeout`, `isNetworkError`). Catch that, never raw AxiosError.
+
+Never call `fetch()` / `window.fetch` / `globalThis.fetch` directly. ESLint (`no-restricted-globals`) and `pnpm doctor` enforce this.
+
+## Exceptions (keep them few, comment each one)
+1. **oRPC client link** (`src/lib/orpc/client.ts`): `RPCLink` from `@orpc/client/fetch` is fetch-based (streaming, event iterators, abort). Leave it; no axios adapter.
+2. **oRPC / Next route handlers** (`RPCHandler` from `@orpc/server/fetch`, `Request`/`Response` objects): these are the Fetch API *server* types, not outgoing requests — fine.
+3. **Next.js data cache**: if a Server Component genuinely needs `fetch` caching (`next: { revalidate, tags }`), prefer `unstable_cache` / `"use cache"` around an axios call. If native fetch is truly required, add `// eslint-disable-next-line no-restricted-globals -- next cache: <reason>`.
+4. **Edge runtime**: axios falls back to its `fetch` adapter automatically; still use `@/lib/http`. If something fails on edge, pass `{ adapter: "fetch" }` rather than calling fetch.
+5. **SDKs that fetch internally** (posthog-js/node, better-auth, @upstash/redis, drizzle): out of scope — do not patch them.

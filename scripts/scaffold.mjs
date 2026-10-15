@@ -145,6 +145,7 @@ function mergePackageDeps(destPkgPath, enabled) {
     "@radix-ui/react-slot": "^1.2.3",
     "@t3-oss/env-nextjs": "^0.13.8",
     "class-variance-authority": "^0.7.1",
+    axios: "^1.20.0",
     clsx: "^2.1.1",
     "lucide-react": "^0.544.0",
     next: "^15.5.0",
