@@ -14,6 +14,8 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.string().url().optional(),
     // ── turnstile pack ──
     TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+    /** Opt-in QA bypass master secret (>=32 bytes). Unset = bypass disabled. See .cursor/skills/qa-bypass. */
+    QA_BYPASS_SECRET: z.string().min(32).optional(),
     // ── d1 pack ──
     CLOUDFLARE_ACCOUNT_ID: z.string().min(1).optional(),
     CLOUDFLARE_API_TOKEN: z.string().min(1).optional(),
@@ -47,6 +49,7 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY,
+    QA_BYPASS_SECRET: process.env.QA_BYPASS_SECRET,
     CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
     CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
     D1_DATABASE_ID: process.env.D1_DATABASE_ID,

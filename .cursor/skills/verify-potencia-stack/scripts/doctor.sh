@@ -23,6 +23,12 @@ check skill-new test -f .cursor/skills/new-potencia-stack/SKILL.md
 check skill-verify test -f .cursor/skills/verify-potencia-stack/SKILL.md
 check health-source test -f src/app/api/health/route.ts
 
+# Turnstile QA bypass (opt-in)
+check qa-bypass-skill test -f .cursor/skills/qa-bypass/SKILL.md
+check qa-bypass-env grep -q 'QA_BYPASS_SECRET' src/env.ts
+check qa-bypass-mint test -f scripts/qa-bypass-token.mjs
+check qa-bypass-helper grep -q 'verifyTurnstileOrQaBypass' src/lib/auth/turnstile.ts
+
 # Forms: rule + components + RHF sign-in
 check forms-rule test -f .cursor/rules/forms.mdc
 check forms-ui-form test -f src/components/ui/form.tsx

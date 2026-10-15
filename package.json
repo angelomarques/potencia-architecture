@@ -16,7 +16,9 @@
     "smoke": "bash .cursor/skills/verify-potencia-stack/scripts/smoke.sh",
     "test:e2e": "playwright test",
     "verify:doctor": "bash .cursor/skills/verify-potencia-stack/scripts/doctor.sh",
-    "verify:smoke": "bash .cursor/skills/verify-potencia-stack/scripts/smoke.sh"
+    "verify:smoke": "bash .cursor/skills/verify-potencia-stack/scripts/smoke.sh",
+    "test:qa-bypass": "SKIP_ENV_VALIDATION=true tsx --test src/lib/auth/qa-bypass.test.ts",
+    "qa-bypass:token": "node scripts/qa-bypass-token.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.0",
@@ -55,6 +57,7 @@
     "eslint": "^9",
     "eslint-config-next": "^15.5.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "tw-animate-css": "^1.3.8",
     "typescript": "^5"
   },

@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { checkQaBypass, type QaBypassDeps } from "./qa-bypass";
 import { http } from "@/lib/http";
 
 export async function verifyTurnstileToken(
@@ -24,4 +25,18 @@ export async function verifyTurnstileToken(
     { headers: { "Content-Type": "application/x-www-form-urlencoded" }, retry: 1 },
   );
   return Boolean(data.success);
+}
+
+/**
+ * Use this in Turnstile-protected route handlers. A valid `x-potencia-qa-bypass`
+ * token for `scope` (route name, e.g. "sign-up") skips ONLY the siteverify call;
+ * everything else in the handler must still run. Without the header (or when
+ * QA_BYPASS_SECRET is unset) Turnstile is enforced as usual.
+ */
+export async function verifyTurnstileOrQaBypass(
+  input: { headers: Headers; scope: string; token: string; ip?: string | null },
+  deps: QaBypassDeps & { verifyTurnstile?: typeof verifyTurnstileToken } = {},
+): Promise<boolean> {
+  if (await checkQaBypass(input, deps)) return true;
+  return (deps.verifyTurnstile ?? verifyTurnstileToken)(input.token, input.ip);
 }
