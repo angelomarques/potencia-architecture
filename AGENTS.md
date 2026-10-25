@@ -16,12 +16,10 @@
 ## Skills
 - `.cursor/skills/new-potencia-stack/` — mint a new app from this template
 - `.cursor/skills/verify-potencia-stack/` — doctor + smoke
-<<<<<<< HEAD
 - `.cursor/skills/qa-bypass/` — opt-in Turnstile bypass for production QA (tokens, wiring, tests)
-=======
 - `.cursor/skills/help-form/` — help/support form that appears in potencia-dashboard Help Center
->>>>>>> origin/main
 - `.cursor/skills/design-system-landing/` — new visual design system or marketing / local-business landing (DESIGN.md first)
+- `.cursor/skills/feature-branch-workflow/` — opt-in stacked PRs for big features (off unless Ângelo asks, or the project switch in that skill is turned on)
 
 ## Scaffold
 `pnpm scaffold -- --name <app> [--with-<pack>|--without-<pack>|--packs a,b]`
