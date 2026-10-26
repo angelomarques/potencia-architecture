@@ -2,20 +2,20 @@
 name: feature-branch-workflow
 description: >-
   Opt-in stacked feature-branch flow for big features so each PR stays small
-  and reviewable. Use only when Ângelo explicitly asks for it on a feature, or
+  and reviewable. Use only when explicitly requested for a feature, or
   when the repo enables it with a standalone line `feature-branch-workflow: enabled`
   in AGENTS.md or `.cursor/rules`. Copy, logo, and small fixes stay a single PR to main.
 ---
 
 # feature-branch-workflow
 
-Ângelo's review flow for **big features**. One long-lived feature branch, then small sub-PRs into that branch. He approves every sub-PR. Nothing merges to `main` or deploys to production without his explicit approval.
+Stacked PR review flow for **big features**. One long-lived feature branch, then small sub-PRs into that branch. The reviewer/lead approves every sub-PR. Nothing merges to `main` or deploys to production without explicit approval.
 
 ## When it applies (opt-in only)
 
 Use this flow only when one of these is true:
 
-1. **Ângelo explicitly asks** for it on this feature, or
+1. **Explicitly requested** by the reviewer/lead on this feature, or
 2. **The project has it enabled.** A line by itself (not inside a bullet, comment, or this skill) in `AGENTS.md` or a file under `.cursor/rules`:
 
 ```
@@ -53,7 +53,7 @@ gh issue create --title "feature/<short-name>" --body "$(cat <<'EOF'
 - [ ] api — handler for the new shape
 - [ ] ui — form wired to the handler
 
-Each sub-task is its own PR into `feature/<short-name>`. Ângelo approves every one.
+Each sub-task is its own PR into `feature/<short-name>`. Each sub-PR must be reviewed and approved.
 EOF
 )"
 ```
@@ -79,9 +79,9 @@ gh pr create --base feature/<short-name> --head feature/<short-name>/<subtask> \
 
 If a nested ref is awkward, use `feature/<short-name>--<subtask>`. The base is still `feature/<short-name>`.
 
-### 4. Ângelo approves, then squash-merge, then update the rest
+### 4. Reviewer approves, then squash-merge, then update the rest
 
-He reviews and approves **every** sub-PR. Never merge a sub-PR without his explicit approval (a review or comment that clearly says to merge).
+The reviewer reviews and approves **every** sub-PR. Never merge a sub-PR without explicit approval (a review or comment that clearly says to merge).
 
 ```bash
 gh pr merge <number> --squash --delete-branch
@@ -104,7 +104,7 @@ Put the result in the PR body and attach evidence: screenshots for UI, a short v
 
 When every sub-PR is squash-merged into the feature branch:
 
-1. Tell Ângelo, in the PR and in the handoff, that the feature is complete and waiting for his review.
+1. Notify the reviewer, in the PR and in the handoff, that the feature is complete and waiting for review.
 2. Open the final PR, or mark the draft from step 2 ready. Base is `main`. The body summarizes the feature and **links every sub-PR**.
 
 ```bash
@@ -118,12 +118,12 @@ gh pr create --base main --head feature/<short-name> \
 - https://github.com/<owner>/<repo>/pull/11
 - https://github.com/<owner>/<repo>/pull/12
 
-Waiting for Ângelo's approval. Do not merge. Do not deploy.
+Waiting for approval. Do not merge. Do not deploy.
 EOF
 )"
 ```
 
-Stop there. Merging to `main` and deploying to production happen only after he approves.
+Stop there. Merging to `main` and deploying to production happen only after explicit approval.
 
 ## Model routing
 
@@ -142,6 +142,6 @@ The Claude plan must list exact files, data shapes, ordered steps, risks, and ho
 ## Stops
 
 - A sub-PR whose base is `main`.
-- Merging a sub-PR, merging the feature PR, or deploying to production without Ângelo's explicit approval.
+- Merging a sub-PR, merging the feature PR, or deploying to production without explicit approval.
 - Packing unrelated concerns into one sub-PR.
-- Using this flow for copy, logo, or small fixes unless he asks for it on that change.
+- Using this flow for copy, logo, or small fixes unless explicitly requested for that change.
