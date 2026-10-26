@@ -14,7 +14,7 @@ Scaffold (`pnpm create` / `scripts/scaffold.mjs`) merges selected packs into a n
 | auth | ON | better-auth email/password |
 | posthog | ON | Product analytics |
 | turnstile | ON | Cloudflare Turnstile |
-| d1 | ON | Cloudflare D1 via HTTP (Vercel-friendly) |
+| d1 | ON | Cloudflare D1 via HTTP + Drizzle sqlite-proxy, `drizzle.config.ts`, `drizzle/` migrations |
 | redis | ON | Upstash Redis / Vercel Marketplace KV rate limit |
 | cf-cron | OFF | Cloudflare Worker cron triggers |
 | cf-queues | OFF | Cloudflare Queues consumer worker |

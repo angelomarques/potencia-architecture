@@ -78,6 +78,35 @@ else
   echo "PASS http-no-raw-fetch"
 fi
 
+# Drizzle is the D1 data layer (generate locally; migrate only if this app owns the DB)
+check drizzle-config test -f drizzle.config.ts
+check drizzle-config-driver grep -q 'driver: "d1-http"' drizzle.config.ts
+check drizzle-config-dialect grep -q 'dialect: "sqlite"' drizzle.config.ts
+check drizzle-config-schema grep -q 'src/lib/db/schema.ts' drizzle.config.ts
+check drizzle-migration test -f drizzle/0000_better_auth.sql
+check drizzle-skill test -f .cursor/skills/drizzle-d1/SKILL.md
+check drizzle-rule test -f .cursor/rules/drizzle.mdc
+check drizzle-script-generate grep -q '"db:generate"' package.json
+check drizzle-script-migrate grep -q '"db:migrate"' package.json
+check drizzle-script-push grep -q '"db:push"' package.json
+check drizzle-script-studio grep -q '"db:studio"' package.json
+check drizzle-script-check grep -q '"db:check"' package.json
+check drizzle-adapter grep -q 'drizzleAdapter' src/lib/auth/auth.ts
+check drizzle-transaction-off grep -q 'transaction: false' src/lib/auth/auth.ts
+check drizzle-select grep -q 'db.select' src/lib/orpc/router.ts
+check drizzle-pack-config test -f packs/d1/files/drizzle.config.ts
+check drizzle-pack-migration test -f packs/d1/files/drizzle/0000_better_auth.sql
+check drizzle-env-flag grep -q 'DB_MIGRATIONS' src/env.ts
+check drizzle-env-example grep -q 'DB_MIGRATIONS' .env.example
+check drizzle-snake-column grep -q 'email_verified' drizzle/0000_better_auth.sql
+check drizzle-default-zero grep -q 'DEFAULT 0' drizzle/0000_better_auth.sql
+if grep -E 'DROP |RENAME |ALTER ' drizzle/0000_better_auth.sql; then
+  echo "FAIL drizzle-no-destructive"
+  fail=1
+else
+  echo "PASS drizzle-no-destructive"
+fi
+
 if grep -R --include='*.md' --include='*.mjs' --include='*.json' -n 'potencia-web' . 2>/dev/null | grep -v node_modules | grep -v '.git' | head -5; then
   echo "FAIL name-potencia-web-references"
   fail=1

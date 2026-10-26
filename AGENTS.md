@@ -7,6 +7,7 @@
 - **Analytics:** server `Analytics` in `src/lib/analytics.ts` (posthog-node). Events use `NEXT_PUBLIC_EVENT_PREFIX` (unique per app; scaffold derives from `--name`). Never hardcode `lw`.
 - **Help forms:** server event `${prefix}_help_center_submitted` with `email`/`message`/`accountEmail` → shows in potencia-dashboard. See `.cursor/rules/help-form.mdc`.
 - **HTTP:** always **axios** via `@/lib/http` — `http` / `createExternalClient` for external APIs (timeouts, idempotent retry, `HttpError`), `api` for internal `/api/*` (baseURL from `NEXT_PUBLIC_APP_URL`, credentials). No raw `fetch()` — enforced by ESLint + `pnpm doctor`. Exceptions (oRPC `RPCLink`, Next cache, SDK internals) in `.cursor/rules/http-axios.mdc`.
+- **Database:** Drizzle via `db` in `src/lib/db` (D1 HTTP sqlite-proxy). Schema `src/lib/db/schema.ts` → `pnpm db:generate` → review `drizzle/` → `pnpm db:migrate` only if this app owns the database. Shared DBs (potencia-products on the dashboard D1) set `DB_MIGRATIONS=disabled`. Do not rename better-auth columns. `d1Query` is the escape hatch. See `.cursor/rules/drizzle.mdc`.
 - Never paste secret values into chat, commits, or PRs.
 - **Turnstile QA bypass:** Turnstile-protected routes call `verifyTurnstileOrQaBypass()` (`src/lib/auth/turnstile.ts`). Opt-in via `QA_BYPASS_SECRET`; header `x-potencia-qa-bypass`; mint with `node scripts/qa-bypass-token.mjs <scope>`. Skips only siteverify — see `.cursor/skills/qa-bypass/`.
 - Do not invent product UI in this template.
@@ -20,6 +21,7 @@
 - `.cursor/skills/help-form/` — help/support form that appears in potencia-dashboard Help Center
 - `.cursor/skills/design-system-landing/` — new visual design system or marketing / local-business landing (DESIGN.md first)
 - `.cursor/skills/feature-branch-workflow/` — opt-in stacked PRs for big features (off unless Ângelo asks, or the project switch in that skill is turned on)
+- `.cursor/skills/drizzle-d1/` — schema, generate, migrate, and shared-database rules
 
 ## Scaffold
 `pnpm scaffold -- --name <app> [--with-<pack>|--without-<pack>|--packs a,b]`

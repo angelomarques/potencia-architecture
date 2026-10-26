@@ -1,7 +1,10 @@
+import { eq } from "drizzle-orm";
 import { os, ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth/auth";
 import { Analytics } from "@/lib/analytics";
+import { db } from "@/lib/db";
+import { user } from "@/lib/db/schema";
 import { helpCenterInputSchema } from "@/lib/validation/help-center";
 
 export interface ORPCContext {
@@ -17,6 +20,42 @@ export const router = {
   echo: os
     .input(z.object({ message: z.string().min(1).max(200) }))
     .handler(async ({ input }) => ({ message: input.message })),
+  /** Typed Drizzle read of the signed-in user. Requires the auth + d1 packs. */
+  account: {
+    me: base.handler(async ({ context }) => {
+      if (!context.headers) {
+        throw new ORPCError("UNAUTHORIZED");
+      }
+
+      const session = await auth.api.getSession({
+        headers: context.headers,
+      });
+
+      if (!session?.user) {
+        throw new ORPCError("UNAUTHORIZED");
+      }
+
+      const rows = await db.select({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        image: user.image,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      })
+        .from(user)
+        .where(eq(user.id, session.user.id))
+        .limit(1);
+
+      const row = rows[0];
+      if (!row) {
+        throw new ORPCError("NOT_FOUND");
+      }
+
+      return row;
+    }),
+  },
   support: {
     helpCenterSubmit: base
       .input(helpCenterInputSchema)

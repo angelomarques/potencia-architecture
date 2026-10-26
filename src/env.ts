@@ -20,6 +20,11 @@ export const env = createEnv({
     CLOUDFLARE_ACCOUNT_ID: z.string().min(1).optional(),
     CLOUDFLARE_API_TOKEN: z.string().min(1).optional(),
     D1_DATABASE_ID: z.string().min(1).optional(),
+    /**
+     * "disabled" when this app shares another app's D1 database.
+     * `pnpm db:migrate` and `pnpm db:push` refuse to run. Unset = this app owns the database.
+     */
+    DB_MIGRATIONS: z.enum(["enabled", "disabled"]).optional(),
     // ── redis pack (Upstash Marketplace / KV_REST_* or UPSTASH_*) ──
     KV_REST_API_URL: z.string().url().optional(),
     KV_REST_API_TOKEN: z.string().min(1).optional(),
@@ -53,6 +58,7 @@ export const env = createEnv({
     CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
     CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
     D1_DATABASE_ID: process.env.D1_DATABASE_ID,
+    DB_MIGRATIONS: process.env.DB_MIGRATIONS,
     KV_REST_API_URL: process.env.KV_REST_API_URL,
     KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,

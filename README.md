@@ -16,7 +16,7 @@ Private **GitHub template** for Potencia web apps (hybrid option 9).
 | `auth` | ON | better-auth (email/password); pulls `d1` |
 | `posthog` | ON | Product analytics |
 | `turnstile` | ON | Cloudflare Turnstile |
-| `d1` | ON | Cloudflare D1 over HTTP (Vercel-friendly) |
+| `d1` | ON | Cloudflare D1 over HTTP + Drizzle (Vercel-friendly) |
 | `redis` | ON | **Upstash Redis** via Vercel Marketplace (`KV_REST_API_*`) or `UPSTASH_REDIS_REST_*` |
 | `cf-cron` | OFF | Cloudflare Worker cron |
 | `cf-queues` | OFF | Cloudflare Queues consumer |
@@ -73,6 +73,26 @@ pnpm smoke
 ```
 
 `src/env.ts` is imported from `next.config.ts` so invalid env fails the build unless `SKIP_ENV_VALIDATION=true`.
+
+## Database (Drizzle)
+
+D1 is reached with Drizzle's sqlite-proxy (`src/lib/db`). App queries go through `db`. `d1Query` remains for one-off SQL.
+
+```bash
+pnpm db:generate   # schema → drizzle/*.sql (no network)
+pnpm db:check      # migration history (no network)
+pnpm db:migrate    # apply drizzle/ to D1_DATABASE_ID
+pnpm db:push       # schema diff against D1 — easy to drop columns
+pnpm db:studio
+```
+
+`drizzle.config.ts` uses dialect `sqlite` and driver `d1-http` with `CLOUDFLARE_ACCOUNT_ID`, `D1_DATABASE_ID`, and `CLOUDFLARE_API_TOKEN`.
+
+better-auth uses `drizzleAdapter` (`provider: "sqlite"`, `transaction: false`) against the same `db`. Column names match the tables already deployed for potencia-dashboard and potencia-products (`email_verified`, `created_at`, `user_id`, …). Do not rename them.
+
+**Shared database:** an app that uses another app's D1 (potencia-products uses potencia-dashboard's database) sets `DB_MIGRATIONS=disabled`. `pnpm db:migrate` and `pnpm db:push` exit before any request. Only the owning app migrates.
+
+Skill: `.cursor/skills/drizzle-d1/SKILL.md`. Example read: oRPC `account.me` (`db.select()`). Row types: `User`, `SessionRecord`, `AccountRecord`, `VerificationRecord` from `@/lib/db`.
 
 
 

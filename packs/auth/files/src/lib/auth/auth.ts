@@ -8,6 +8,12 @@ import * as schema from "@/lib/db/schema";
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "sqlite",
+    /**
+     * D1's HTTP API runs each statement on its own. Interactive BEGIN/COMMIT
+     * from sqlite-proxy would not be one transaction, so leave this off
+     * (the adapter default). SQLite writes use RETURNING instead.
+     */
+    transaction: false,
     schema: {
       user: schema.user,
       session: schema.session,

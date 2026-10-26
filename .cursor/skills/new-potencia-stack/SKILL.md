@@ -34,7 +34,8 @@ Creating a new Next.js Potencia app with optional packs (auth, orpc, redis, turn
 4. **Vercel**: `vercel link` / import repo; copy keys from `.env.example` into project env (do not echo secrets). Include `NEXT_PUBLIC_EVENT_PREFIX`.
 5. **Upstash**: Marketplace → Redis if `redis` pack enabled.
 6. **Forms**: follow `.cursor/rules/forms.mdc` — always react-hook-form + zod + shadcn `Form*` (see sign-in at `src/app/(auth)/sign-in/page.tsx`).
-7. **Verify**: follow `verify-potencia-stack` skill (`pnpm run doctor`, `pnpm build`).
+7. **Database:** if the app owns its D1 database, review `drizzle/` and run `pnpm db:migrate` once credentials exist. If it shares another app's database (potencia-products shares potencia-dashboard's D1), set `DB_MIGRATIONS=disabled` and do not migrate. See `.cursor/skills/drizzle-d1/SKILL.md`.
+8. **Verify**: follow `verify-potencia-stack` skill (`pnpm run doctor`, `pnpm build`).
 
 ## Pack defaults
 See `packs/defaults.json`: orpc/auth/posthog/turnstile/d1/redis ON; cf-cron/cf-queues OFF.

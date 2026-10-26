@@ -13,6 +13,7 @@ Doctor + smoke for the potencia-stack template (and scaffolded apps).
 - `help-center` — help-form skill/rule + `support.helpCenterSubmit` emits `help_center_submitted` with `accountEmail`
 - `event-prefix-env` — `NEXT_PUBLIC_EVENT_PREFIX` in `src/env.ts` + `.env.example`
 - `http-axios` — `.cursor/rules/http-axios.mdc`, axios dep, `src/lib/http/{external,internal}.ts`, ESLint fetch ban, no raw `fetch(` in src/packs
+- `drizzle-d1` — `drizzle.config.ts` (sqlite / `d1-http`), `drizzle/` migration, `db:*` scripts, Drizzle adapter, shared-db `DB_MIGRATIONS` guard
 
 ## Scripts
 - `scripts/doctor.sh` — static checks

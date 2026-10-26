@@ -306,6 +306,25 @@ Available packs: ${listPacks().join(", ")}
   writeEnabledManifest(dest, enabled, all);
   applyEventPrefix(dest, args.name);
 
+  // The Drizzle example procedure needs auth + d1. The base router does not.
+  if (enabled.has("orpc") && !(enabled.has("d1") && enabled.has("auth"))) {
+    const baseRouter = path.join(TEMPLATE_ROOT, "packs/orpc/router.base.ts");
+    const destRouter = path.join(dest, "src/lib/orpc/router.ts");
+    if (fs.existsSync(baseRouter) && fs.existsSync(destRouter)) {
+      fs.copyFileSync(baseRouter, destRouter);
+      console.log("[scaffold] orpc router without Drizzle example (needs auth + d1)");
+    }
+  }
+
+  if (!enabled.has("d1")) {
+    const pkgPath = path.join(dest, "package.json");
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    for (const script of ["db:generate", "db:migrate", "db:push", "db:studio", "db:check", "test:db"]) {
+      delete pkg.scripts[script];
+    }
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
+  }
+
   // Drop template-only scaffold docs noise? keep packs/ so apps can re-enable later.
   console.log("[scaffold] next: cd", dest, "&& pnpm install && pnpm dev");
   console.log("[scaffold] DONE");
