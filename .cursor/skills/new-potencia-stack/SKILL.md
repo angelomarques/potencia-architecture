@@ -28,7 +28,7 @@ Creating a new Next.js Potencia app with optional packs (auth, orpc, redis, turn
    cd ../my-app
    git init -b main
    git add -A && git commit -m "chore: scaffold from potencia-stack"
-   gh repo create angelomarques/my-app --private --source=. --remote=origin --push
+   gh repo create <owner>/my-app --private --source=. --remote=origin --push
    ```
    Or: `gh repo create my-app --private --template angelomarques/potencia-stack --clone` then re-run scaffold overlays if packs differ; still set `NEXT_PUBLIC_EVENT_PREFIX` uniquely.
 4. **Vercel**: `vercel link` / import repo; copy keys from `.env.example` into project env (do not echo secrets). Include `NEXT_PUBLIC_EVENT_PREFIX`.

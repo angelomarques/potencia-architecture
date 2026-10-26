@@ -1,6 +1,6 @@
 ---
 name: qa-bypass
-description: Opt-in, short-lived bypass of Cloudflare Turnstile so the Potencia CTO bot can run production tests through Turnstile-protected forms. Use when wiring a new Turnstile-protected route, minting a QA token, or auditing bypass use.
+description: Opt-in, short-lived bypass of Cloudflare Turnstile so automated QA bots and test suites can run production tests through Turnstile-protected forms. Use when wiring a new Turnstile-protected route, minting a QA token, or auditing bypass use.
 ---
 
 # QA bypass (Turnstile)

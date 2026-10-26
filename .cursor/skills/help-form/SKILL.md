@@ -19,7 +19,7 @@ Reference implementation in this template (already wired):
 | Dialog UI (RHF + zod + shadcn Form) | `src/components/help-center-dialog.tsx` |
 | Mounted on | `src/app/page.tsx` |
 
-Real consumer: `angelomarques/lawa` (`src/server/orpc/router.ts` → `helpCenterSubmit`).
+Real consumer example: `<org>/<app>` (`src/server/orpc/router.ts` → `helpCenterSubmit`).
 
 ## How the dashboard reads it (contract, from potencia-dashboard `src/lib/posthog/help-center.ts`)
 
