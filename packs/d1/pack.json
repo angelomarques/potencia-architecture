@@ -1,6 +1,6 @@
 {
   "name": "d1",
-  "description": "Cloudflare D1 via REST/HTTP + Drizzle sqlite-proxy",
+  "description": "Cloudflare D1 via REST/HTTP + Drizzle (sqlite-proxy, drizzle.config.ts, drizzle/ migrations)",
   "default": true,
   "dependencies": {
     "drizzle-orm": "^0.44.0"
@@ -13,7 +13,8 @@
     "server": {
       "CLOUDFLARE_ACCOUNT_ID": "z.string().min(1)",
       "CLOUDFLARE_API_TOKEN": "z.string().min(1)",
-      "D1_DATABASE_ID": "z.string().min(1)"
+      "D1_DATABASE_ID": "z.string().min(1)",
+      "DB_MIGRATIONS": "z.enum([\"enabled\", \"disabled\"]).optional()"
     },
     "client": {}
   }

@@ -24,6 +24,14 @@ function requireEnv(name: keyof typeof env, value: string | undefined): string {
   return value;
 }
 
+/**
+ * sqlite-proxy binds Date instances for better-auth timestamps.
+ * JSON would send those as ISO strings; the shared columns are integer unix ms.
+ */
+export function serializeD1Params(params: readonly unknown[]): unknown[] {
+  return params.map((value) => (value instanceof Date ? value.getTime() : value));
+}
+
 /** POST to the D1 query endpoint. Writes are not retried (POST is non-idempotent). */
 async function postD1(path: string, token: string, payload: unknown): Promise<D1Result> {
   try {
@@ -50,7 +58,7 @@ export async function d1Query<T = Record<string, unknown>>(
   const data = await postD1(
     `/accounts/${accountId}/d1/database/${dbId}/query`,
     token,
-    { sql, params },
+    { sql, params: serializeD1Params(params) },
   );
   if (!data.success) {
     const msg = data.errors?.[0]?.message ?? "D1 query failed";
@@ -73,7 +81,7 @@ export async function d1Batch(
   const data = await postD1(
     `/accounts/${accountId}/d1/database/${dbId}/query`,
     token,
-    statements.map((s) => ({ sql: s.sql, params: s.params ?? [] })),
+    statements.map((s) => ({ sql: s.sql, params: serializeD1Params(s.params ?? []) })),
   );
   if (!data.success) {
     const msg = data.errors?.[0]?.message ?? "D1 batch failed";

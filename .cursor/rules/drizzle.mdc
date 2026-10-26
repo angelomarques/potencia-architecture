@@ -1,0 +1,17 @@
+---
+description: Drizzle is the data layer. Schema changes go through generate, then migrate only if this app owns the database.
+globs: src/lib/db/**/*.ts,src/lib/auth/**/*.ts,drizzle.config.ts
+alwaysApply: true
+---
+
+# Drizzle + D1
+
+Read and write app data through `db` from `@/lib/db`. Keep `d1Query` for SQL Drizzle cannot express.
+
+Schema lives in `src/lib/db/schema.ts`. After a schema change run `pnpm db:generate`, review `drizzle/`, then `pnpm db:check`. Apply with `pnpm db:migrate` only when this app owns the D1 database.
+
+Do not rename better-auth columns (`email_verified`, `created_at`, `user_id`, and the rest). potencia-dashboard and potencia-products share those tables.
+
+Apps that share another app's database set `DB_MIGRATIONS=disabled` (potencia-products does this for the dashboard database). `pnpm db:migrate` and `pnpm db:push` must refuse. Do not point `db:push` at a shared database.
+
+Follow `.cursor/skills/drizzle-d1/SKILL.md`. better-auth stays on `drizzleAdapter` with `transaction: false`.

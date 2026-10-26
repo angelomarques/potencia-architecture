@@ -18,7 +18,13 @@
     "verify:doctor": "bash .cursor/skills/verify-potencia-stack/scripts/doctor.sh",
     "verify:smoke": "bash .cursor/skills/verify-potencia-stack/scripts/smoke.sh",
     "test:qa-bypass": "SKIP_ENV_VALIDATION=true tsx --test src/lib/auth/qa-bypass.test.ts",
-    "qa-bypass:token": "node scripts/qa-bypass-token.mjs"
+    "qa-bypass:token": "node scripts/qa-bypass-token.mjs",
+    "db:generate": "node scripts/drizzle-kit.mjs generate",
+    "db:migrate": "node scripts/drizzle-kit.mjs migrate",
+    "db:push": "node scripts/drizzle-kit.mjs push",
+    "db:studio": "node scripts/drizzle-kit.mjs studio",
+    "db:check": "node scripts/drizzle-kit.mjs check",
+    "test:db": "SKIP_ENV_VALIDATION=true tsx --test src/lib/db/drizzle.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.0",
