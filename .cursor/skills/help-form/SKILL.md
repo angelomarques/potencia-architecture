@@ -15,7 +15,7 @@ Reference implementation in this template (already wired):
 |---|---|
 | zod schema | `src/lib/validation/help-center.ts` |
 | oRPC procedure `support.helpCenterSubmit` | `src/lib/orpc/router.ts` |
-| Server capture (`Analytics.track`, adds prefix) | `src/lib/analytics.ts` |
+| Server capture (`captureServerEvent`, adds prefix, flushes after the response) | `src/lib/analytics.ts` |
 | Dialog UI (RHF + zod + shadcn Form) | `src/components/help-center-dialog.tsx` |
 | Mounted on | `src/app/page.tsx` |
 
@@ -55,11 +55,10 @@ Any extra properties are fine but invisible in the dashboard.
 
 1. **Prefix** — set `NEXT_PUBLIC_EVENT_PREFIX` (lowercase slug, ≤16 chars, validated in `src/env.ts`). `pnpm scaffold -- --name <app>` derives it. Never leave `app` in production; never reuse another app's prefix (`lw` = Lawa).
 2. **Schema** — reuse/extend `helpCenterInputSchema`. Keep the keys `email` and `message`.
-3. **Server** — call `Analytics.track` from an oRPC handler (server only; `analytics.ts` is `server-only`). Pass the **unprefixed** name `help_center_submitted`; `Analytics.track` prepends the prefix:
+3. **Server** — call `captureServerEvent` from an oRPC handler (server only; `analytics.ts` is `server-only`). Pass the **unprefixed** name `help_center_submitted`; the helper prepends the prefix and schedules the flush after the response (see `.cursor/skills/posthog-server/`):
    ```ts
-   await Analytics.track({
+   captureServerEvent("help_center_submitted", {
      distinctId: user.id,
-     event: "help_center_submitted",
      properties: {
        email: input.email,
        message: input.message,
@@ -67,7 +66,6 @@ Any extra properties are fine but invisible in the dashboard.
        accountEmail: user.email,
      },
    });
-   await Analytics.shutdown(); // flush before the serverless function exits
    ```
    The template procedure requires a better-auth session (throws `UNAUTHORIZED`).
 4. **Client** — follow `.cursor/rules/forms.mdc`: `useForm` + `zodResolver(helpCenterInputSchema)` + shadcn `Form*`; submit with `orpc.support.helpCenterSubmit(values)`. Copy `HelpCenterDialog` rather than writing a new form.
@@ -80,7 +78,7 @@ Any extra properties are fine but invisible in the dashboard.
 ## Env vars
 
 App (sender):
-- `NEXT_PUBLIC_POSTHOG_KEY` — project 75942 API key (the shared Potencia project). Missing ⇒ `Analytics.track` silently no-ops.
+- `NEXT_PUBLIC_POSTHOG_KEY` — project 75942 API key (the shared Potencia project). Missing ⇒ `captureServerEvent` silently no-ops.
 - `NEXT_PUBLIC_POSTHOG_HOST` — default `https://us.i.posthog.com`.
 - `NEXT_PUBLIC_EVENT_PREFIX` — unique per app.
 - Optional: `TURNSTILE_SECRET_KEY` / `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, Upstash/KV vars + `RATE_LIMIT_PER_MINUTE`.
@@ -98,9 +96,10 @@ Dashboard (reader, already configured there): `POSTHOG_PERSONAL_API_KEY`, `POSTH
 
 - Wrong key or wrong project ⇒ event lands elsewhere; the dashboard only reads project 75942.
 - Missing `NEXT_PUBLIC_POSTHOG_KEY` ⇒ no error, no event.
-- Prefixing twice (`event: "lw_help_center_submitted"` into `Analytics.track`) ⇒ `lw_lw_help_center_submitted` → group `lw_lw`.
+- Prefixing twice (`event: "lw_help_center_submitted"` into `captureServerEvent`) ⇒ `lw_lw_help_center_submitted` → group `lw_lw`.
 - Suffix typos (`help_centre_submitted`, `helpcenter_submitted`) ⇒ invisible to the `endsWith` filter.
 - `account_email` / `body` / `text` keys ⇒ blank fields in the inbox.
-- Skipping `Analytics.shutdown()` on serverless ⇒ events dropped.
+- Calling `posthog-node` directly and returning without `captureServerEvent` ⇒ the isolate can freeze before the batch is sent and the event is dropped.
+- Awaiting `flush()` or `shutdown()` in the handler ⇒ the user waits on PostHog, and `shutdown()` drops the shared client. `captureServerEvent` already schedules `flushWithTimeout` via `after()` / `waitUntil`.
 - Shared prefix between apps ⇒ messages merged into one group.
 - Never paste PostHog keys into commits, PRs or chat.

@@ -87,7 +87,7 @@ Agents and humans must build forms with **react-hook-form + zod + shadcn Form**.
 ## Analytics (PostHog)
 
 - Browser: `src/components/analytics/posthog-provider.tsx` (`posthog-js`)
-- Server: `src/lib/analytics.ts` — `Analytics.track` / `identify` / `shutdown` / `isInitialized` (`posthog-node`, `server-only`)
+- Server: `src/lib/analytics.ts` — `captureServerEvent` (`posthog-node`, `server-only`). One client per instance. The flush runs in Next.js `after()` (or `waitUntil`) with a ~2.5s timeout so a request never waits on PostHog. `Analytics.track` / `identify` / `isInitialized` use the same path.
 - Shared PostHog project is fine; events are namespaced with **`NEXT_PUBLIC_EVENT_PREFIX`**
 - Template default prefix: `app`
 - On mint, scaffold sets a unique short prefix from `--name` (e.g. `kingdom-movies` → `km`, `potencia-dashboard` → `pd`) into `.env.example` and `potencia.packs.json`

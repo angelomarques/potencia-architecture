@@ -1,7 +1,7 @@
 import { os, ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth/auth";
-import { Analytics } from "@/lib/analytics";
+import { captureServerEvent } from "@/lib/analytics";
 import { helpCenterInputSchema } from "@/lib/validation/help-center";
 
 export interface ORPCContext {
@@ -35,9 +35,8 @@ export const router = {
 
         const user = session.user;
 
-        await Analytics.track({
+        captureServerEvent("help_center_submitted", {
           distinctId: user.id,
-          event: "help_center_submitted",
           properties: {
             email: input.email,
             message: input.message,
@@ -45,8 +44,6 @@ export const router = {
             accountEmail: user.email,
           },
         });
-
-        await Analytics.shutdown();
 
         return { ok: true };
       }),

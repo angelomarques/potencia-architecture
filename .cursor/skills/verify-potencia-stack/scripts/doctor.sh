@@ -45,8 +45,24 @@ check analytics-module test -f src/lib/analytics.ts
 check analytics-server-only grep -q 'server-only' src/lib/analytics.ts
 check analytics-track grep -q 'static async track' src/lib/analytics.ts
 check analytics-identify grep -q 'static async identify' src/lib/analytics.ts
-check analytics-shutdown grep -q 'static async shutdown' src/lib/analytics.ts
 check analytics-isInitialized grep -q 'isInitialized' src/lib/analytics.ts
+check analytics-capture grep -q 'export function captureServerEvent' src/lib/analytics.ts
+check analytics-flush-timeout grep -q 'function flushWithTimeout' src/lib/analytics.ts
+check analytics-after grep -q 'after(' src/lib/analytics.ts
+check analytics-wait-until grep -q 'waitUntil' src/lib/analytics.ts
+check analytics-flush-at grep -q 'flushAt: 1' src/lib/analytics.ts
+check analytics-flush-interval grep -q 'flushInterval: 0' src/lib/analytics.ts
+check analytics-pack-sync cmp -s src/lib/analytics.ts packs/posthog/files/src/lib/analytics.ts
+check analytics-router-capture grep -q 'captureServerEvent' src/lib/orpc/router.ts
+check analytics-test test -f src/lib/analytics.test.ts
+check analytics-rule test -f .cursor/rules/analytics-server.mdc
+check analytics-skill test -f .cursor/skills/posthog-server/SKILL.md
+if grep -n 'shutdown(' src/lib/analytics.ts src/lib/orpc/router.ts packs/posthog/files/src/lib/analytics.ts; then
+  echo "FAIL analytics-no-per-request-shutdown"
+  fail=1
+else
+  echo "PASS analytics-no-per-request-shutdown"
+fi
 if grep -qE 'EVENT_PREFIX[[:space:]]*=[[:space:]]*"lw"' src/lib/analytics.ts; then
   echo "FAIL analytics-no-lw"
   fail=1

@@ -7,8 +7,8 @@ alwaysApply: true
 # Help forms
 
 Any help / support / contact form must send a **server-side** PostHog event
-`${NEXT_PUBLIC_EVENT_PREFIX}_help_center_submitted` via `Analytics.track({ event: "help_center_submitted", ... })`
-with properties `email`, `message`, `accountEmail` (exact keys), then `Analytics.shutdown()`.
+`${NEXT_PUBLIC_EVENT_PREFIX}_help_center_submitted` via `captureServerEvent("help_center_submitted", { distinctId, properties })`
+with properties `email`, `message`, `accountEmail` (exact keys). The helper schedules the PostHog flush after the response.
 potencia-dashboard `/help-center` only shows events ending in `_help_center_submitted`, grouped by prefix.
 
 Follow `.cursor/skills/help-form/SKILL.md`. Reuse `src/components/help-center-dialog.tsx` and `support.helpCenterSubmit`.
