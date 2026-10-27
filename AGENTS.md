@@ -4,8 +4,8 @@
 - **pnpm only** — never npm/yarn. Respect `packageManager` in package.json.
 - Env lives in **`src/env.ts`** (`@t3-oss/env-nextjs` + zod). Packs extend `server` / `client` when enabled.
 - **Forms:** always **react-hook-form + zod + shadcn Form** — see `.cursor/rules/forms.mdc`. Example: `src/app/(auth)/sign-in/page.tsx`.
-- **Analytics:** server `Analytics` in `src/lib/analytics.ts` (posthog-node). Events use `NEXT_PUBLIC_EVENT_PREFIX` (unique per app; scaffold derives from `--name`). Never hardcode `lw`.
-- **Help forms:** server event `${prefix}_help_center_submitted` with `email`/`message`/`accountEmail` → shows in potencia-dashboard. See `.cursor/rules/help-form.mdc`.
+- **Analytics:** `captureServerEvent(event, props)` in `src/lib/analytics.ts` (one `posthog-node` client per instance, `flushAt: 1` / `flushInterval: 0`). Events use `NEXT_PUBLIC_EVENT_PREFIX` (unique per app; scaffold derives from `--name`). Never hardcode `lw`. Serverless freezes the instance when the response is sent, so the helper schedules `after(() => flushWithTimeout())` (`waitUntil` from `@vercel/functions` when `after` is unavailable). The handler returns immediately; the invocation stays alive until the flush finishes or the ~2.5s timeout. Record the product action once, not each database query. See `.cursor/skills/posthog-server/` and `.cursor/rules/analytics-server.mdc`.
+- **Help forms:** server event `${prefix}_help_center_submitted` with `email`/`message`/`accountEmail` via `captureServerEvent` → shows in potencia-dashboard. See `.cursor/rules/help-form.mdc`.
 - **HTTP:** always **axios** via `@/lib/http` — `http` / `createExternalClient` for external APIs (timeouts, idempotent retry, `HttpError`), `api` for internal `/api/*` (baseURL from `NEXT_PUBLIC_APP_URL`, credentials). No raw `fetch()` — enforced by ESLint + `pnpm doctor`. Exceptions (oRPC `RPCLink`, Next cache, SDK internals) in `.cursor/rules/http-axios.mdc`.
 - Never paste secret values into chat, commits, or PRs.
 - **Turnstile QA bypass:** Turnstile-protected routes call `verifyTurnstileOrQaBypass()` (`src/lib/auth/turnstile.ts`). Opt-in via `QA_BYPASS_SECRET`; header `x-potencia-qa-bypass`; mint with `node scripts/qa-bypass-token.mjs <scope>`. Skips only siteverify — see `.cursor/skills/qa-bypass/`.
@@ -18,6 +18,7 @@
 - `.cursor/skills/verify-potencia-stack/` — doctor + smoke
 - `.cursor/skills/qa-bypass/` — opt-in Turnstile bypass for production QA (tokens, wiring, tests)
 - `.cursor/skills/help-form/` — help/support form that appears in potencia-dashboard Help Center
+- `.cursor/skills/posthog-server/` — server PostHog capture that flushes after the response on serverless
 - `.cursor/skills/design-system-landing/` — new visual design system or marketing / local-business landing (DESIGN.md first)
 - `.cursor/skills/feature-branch-workflow/` — opt-in stacked PRs for big features (off unless explicitly requested, or the project switch in that skill is turned on)
 

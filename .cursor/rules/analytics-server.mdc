@@ -1,0 +1,24 @@
+---
+description: Server PostHog captures go through captureServerEvent so the flush never blocks the response
+globs: **/*.{ts,tsx}
+alwaysApply: true
+---
+
+# Server analytics (PostHog)
+
+Server events go through `captureServerEvent` in `src/lib/analytics.ts` (`server-only`).
+
+```ts
+captureServerEvent("help_center_submitted", {
+  distinctId: user.id,
+  properties: { email, message, accountEmail },
+});
+```
+
+- Pass the **unprefixed** event name. The helper adds `NEXT_PUBLIC_EVENT_PREFIX`.
+- One `posthog-node` client per warm instance (`flushAt: 1`, `flushInterval: 0`). The helper schedules `after(() => flushWithTimeout())`, and falls back to `waitUntil` from `@vercel/functions` when `after` throws (no Next.js request scope).
+- Serverless freezes the instance when the response is sent. `after` / `waitUntil` keep the invocation alive until the flush settles. The handler returns without waiting. `flushWithTimeout` races the flush against ~2.5s and logs errors instead of rejecting.
+- Record the product action once. A signup or a help submission is one event, including when the handler runs several database queries.
+- `Analytics.track` / `identify` use the same client and the same scheduled flush.
+
+Full notes: `.cursor/skills/posthog-server/SKILL.md`. Help-center inbox contract: `.cursor/skills/help-form/SKILL.md`.
