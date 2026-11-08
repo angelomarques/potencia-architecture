@@ -20,6 +20,9 @@
 - `.cursor/skills/help-form/` — help/support form that appears in potencia-dashboard Help Center
 - `.cursor/skills/design-system-landing/` — new visual design system or marketing / local-business landing (DESIGN.md first)
 - `.cursor/skills/feature-branch-workflow/` — opt-in stacked PRs for big features (off unless explicitly requested, or the project switch in that skill is turned on)
+- `.cursor/skills/pwfeat/` — clean architecture when implementing a feature (`/pwfeat`; also used by `/sub-task` and `/ptask`). Arrows live in `layers.md`
+- `.cursor/skills/sub-task/` — look up a docs sub-task, implement it in an isolated git worktree, commit, open the stacked PR into `feature/<short-name>`
+- `.cursor/skills/ptask/` — run a whole task: one sequential sub-agent per `###` slice, each in its own worktree (`scripts/worktree.sh`; follows `/sub-task` → `/pwfeat`)
 
 ## Scaffold
 `pnpm scaffold -- --name <app> [--with-<pack>|--without-<pack>|--packs a,b]`

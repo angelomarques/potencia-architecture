@@ -11,6 +11,23 @@ description: >-
 
 Stacked PR review flow for **big features**. One long-lived feature branch, then small sub-PRs into that branch. The reviewer/lead approves every sub-PR. Nothing merges to `main` or deploys to production without explicit approval.
 
+## Worktrees
+
+[ptask](../ptask/SKILL.md) and [sub-task](../sub-task/SKILL.md) run the branch names and PR bases in this skill inside a linked worktree from [worktree.sh](../ptask/scripts/worktree.sh). Do not `git checkout`, `git switch`, or `git pull` the shared checkout. `git fetch` is fine. A dirty shared checkout stays as it is.
+
+The checkout blocks below still name the branch and its start ref. Prepare that branch instead of checking it out:
+
+```bash
+.cursor/skills/ptask/scripts/worktree.sh prepare \
+  --repo "$PRIMARY" \
+  --slot "<branch-with-slashes-replaced-by-->" \
+  --branch "<branch>" \
+  --start "<start-ref>" \
+  --skill-root "$PRIMARY/.cursor/skills"
+```
+
+Commit, push, and verify in the printed `path`. Reuse the slot to resume. Cleanup is `worktree.sh cleanup` and only when the helper accepts it. It never takes `--force`, never deletes a branch, and refuses dirty, ignored, unpushed, or unowned trees. The rebase after an approved squash-merge runs in that sub-task's worktree (`git -C "$path" rebase …` then `git -C "$path" push --force-with-lease`), not in the shared checkout.
+
 ## When it applies (opt-in only)
 
 Use this flow only when one of these is true:
