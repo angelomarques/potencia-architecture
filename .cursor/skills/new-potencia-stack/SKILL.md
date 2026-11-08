@@ -41,4 +41,4 @@ See `packs/defaults.json`: orpc/auth/posthog/turnstile/d1/redis ON; cf-cron/cf-q
 
 ## Env
 Single file `src/env.ts`. Packs document schema fragments in `packs/*/pack.json` → `env`.
-Server analytics: `src/lib/analytics.ts` (`Analytics.track/identify/shutdown/isInitialized`) prefixes events with `NEXT_PUBLIC_EVENT_PREFIX`.
+Server analytics: `src/lib/analytics.ts`. Call `captureServerEvent(event, { distinctId, properties })`. It prefixes events with `NEXT_PUBLIC_EVENT_PREFIX` and schedules a bounded flush with Next.js `after()` (fallback `waitUntil` from `@vercel/functions`) so the response does not wait on PostHog. See `.cursor/skills/posthog-server/`.

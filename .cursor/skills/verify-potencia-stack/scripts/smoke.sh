@@ -7,4 +7,6 @@ pnpm install --frozen-lockfile=false
 SKIP_ENV_VALIDATION=true pnpm build
 echo "[smoke] doctor"
 bash .cursor/skills/verify-potencia-stack/scripts/doctor.sh
+echo "[smoke] analytics flush"
+pnpm test:analytics
 echo "PASS smoke"
