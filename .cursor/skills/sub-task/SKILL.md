@@ -19,12 +19,12 @@ Do not switch or edit the shared checkout. Prepare the slice with [worktree.sh](
 Copy this checklist and keep it honest:
 
 ```
-- [ ] 1. Resolve the sub-task doc
+- [ ] 1. Resolve the sub-task doc and classify the heading
 - [ ] 2. Confirm the feature branch exists, without switching the shared checkout
-- [ ] 3. Prepare the named task branch in its own worktree
-- [ ] 4. Implement only that sub-task
+- [ ] 3. Prepare the named task branch in its own worktree (spawn only)
+- [ ] 4. Implement only that sub-task, with evidence on this PR
 - [ ] 5. Verify from the worktree
-- [ ] 6. Commit, push, open PR (base = feature branch)
+- [ ] 6. Commit, push, open PR (base = feature branch) only if ready for review
 ```
 
 ## 1. Resolve the sub-task doc
@@ -33,7 +33,16 @@ Take the id from the user. Open the parent file in `docs/tasks/` and the matchin
 
 Copy **Branch**, **Base**, and **PR** from the parent task. `<base>` is `feature/<short-name>`. The task **Branch** must be that ref. The PR base is `<base>`, never `main`.
 
-Find the named `###` heading. The slice is the checkboxes under that heading only.
+Find the named `###` heading. Classify the whole sub-task file with [queue-slices.py](../ptask/scripts/queue-slices.py) so a later proof heading cannot become its own PR:
+
+```bash
+python3 .cursor/skills/ptask/scripts/queue-slices.py docs/sub-tasks/<file>.md
+```
+
+- **`fold`:** this heading is QA/proof/screenshots-only. Do **not** prepare a new worktree, branch, or PR. Route each page's evidence onto that page's existing implementation task/branch/PR. If those owner PRs are open, resume them and attach evidence there. If they are already merged, stop with a blocker — do not open a screenshots-only PR.
+- **`block`:** no-op or evidence-only with no owner. Stop. Do not open a PR.
+- **`spawn` / `implement`:** the slice is the checkboxes under that heading, plus any `folded_from` evidence that routes here. Screenshots and verify output go on **this** PR.
+- **`spawn` / `docs` | `tests` | `infra` | `audit`:** allowed without product UI when that work is the heading.
 
 If the heading is missing or every item is already `[x]`, stop and say so. Do not invent a slice.
 
@@ -56,7 +65,7 @@ Also confirm the tracker: `gh pr list --head <base> --base main`. If none, stop.
 
 ## 3. Always prepare the named task branch
 
-Every invocation must land on a **dedicated branch for this sub-task**, in its own worktree, from the updated feature branch — even if the shared checkout was already on `<base>`, already on a similar name, or already on a previous task branch.
+Spawn headings only. `fold` / `block` headings do not get a branch. For a spawn heading, land on a **dedicated branch for this sub-task**, in its own worktree, from the updated feature branch — even if the shared checkout was already on `<base>`, already on a similar name, or already on a previous task branch.
 
 Slot: `<base>/<slug>` with each `/` replaced by `--`. Reuse that slot when resuming. The slot has no slashes.
 
@@ -98,13 +107,15 @@ Do not paste `.env` values.
 
 ## 5. Verify
 
-Run [verify-potencia-stack](../verify-potencia-stack/SKILL.md) from the worktree root (`pnpm doctor`, `pnpm smoke`, as that skill requires for the changed surface). Put command, exit code, and a short result in the PR body.
+Run [verify-potencia-stack](../verify-potencia-stack/SKILL.md) from the worktree root (`pnpm doctor`, `pnpm smoke`, as that skill requires for the changed surface). Put command, exit code, and a short result in the **same** PR body.
 
-If verify fails, fix on this branch in this worktree. Do not open the PR red on purpose. Do not remove the worktree; verify evidence is gitignored and cleanup will refuse it.
+For an `implement` slice, also attach the relevant screenshots (or a short video when the flow is interactive) on this PR, including any `folded_from` proof checkboxes that route here. Several pages in the plan: only this page's evidence, not a combined dump.
+
+If verify fails, fix on this branch in this worktree. If screenshot capture is blocked or evidence is missing, the slice is **incomplete** — return that blocker. Do not fake a pass, and do not open a placeholder or screenshots-only PR. Do not remove the worktree; verify evidence is gitignored and cleanup will refuse it.
 
 ## 6. Commit and open the PR
 
-Commit when this skill is invoked — that **is** the request to commit this slice. Commit inside the worktree.
+Commit when this skill is invoked and the slice is real work — that **is** the request to commit this slice. Commit inside the worktree. Do not commit a screenshots-only or empty tree as if it were the implementation.
 
 Follow the repo commit protocol: status, diff, log style, stage only this sub-task, HEREDOC message, no `--no-verify`, no force-push, no amend unless the usual amend rules apply. Do not commit `.env` or secrets.
 
@@ -114,7 +125,11 @@ git -C "<path>" push -u origin HEAD
 existing="$(gh pr list --head "<base>/<slug>" --json url --jq '.[0].url')"
 ```
 
-If `existing` is non-empty, return that URL. Otherwise, from the worktree:
+If `existing` is non-empty, update that PR with this slice's work and evidence, then return that URL. Do not open a second PR for screenshots.
+
+Open a new PR only when classification is `spawn` and [review_disposition](../ptask/scripts/queue-slices.py) is `ready` (`implement` needs evidence `present`; docs/test/infra/audit may be `not-required`). Missing or blocked evidence → no PR URL.
+
+Otherwise, from the worktree:
 
 ```bash
 gh pr create --base <base> --head <base>/<slug> \
@@ -130,6 +145,7 @@ gh pr create --base <base> --head <base>/<slug> \
 
 ## Test plan
 - [ ] verify-potencia-stack from the worktree (command + exit code)
+- [ ] evidence on this PR (screenshots/video, or not-required for docs/test/infra/audit)
 
 Waiting for approval. Do not merge. Do not deploy.
 EOF
@@ -155,6 +171,8 @@ If cleanup refuses, leave the directory. The helper keeps the branch and rejects
 - Switching the shared checkout to free a branch.
 - Sub-PR whose base is `main`.
 - Implementing a different slice than the one named.
+- Opening a PR for a fold/block heading, or a screenshots-only / empty PR.
+- Opening an implement PR when evidence is missing or capture is blocked.
 - Merging or deploying.
 - Removing a dirty, ignored, unpushed, or unowned worktree.
-- Packing multiple `###` groups into one PR unless the user named the whole task.
+- Packing multiple `###` groups into one PR unless the user named the whole task. Do fold later proof/screenshots headings onto this owner — that is routing, not packing sibling product slices.

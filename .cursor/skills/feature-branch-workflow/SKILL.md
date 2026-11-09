@@ -61,7 +61,7 @@ git push -u origin feature/<short-name>
 
 ### 2. Split into sub-tasks and write the checklist
 
-Aim for **small diffs, one concern each**, independently reviewable. Put the breakdown in a tracking issue or a draft PR description:
+Aim for **small diffs, one concern each**, independently reviewable. Put the breakdown in a tracking issue or a draft PR description. Do **not** add a later "proof screenshots" / visual-QA sub-task. Verification and screenshots belong on each implementation sub-PR.
 
 ```bash
 gh issue create --title "feature/<short-name>" --body "$(cat <<'EOF'
@@ -115,7 +115,7 @@ Rebase every remaining sub-branch onto the updated feature branch so the next re
 
 On **every** sub-PR, scan `.cursor/skills/` for skills whose name or body says **verify** or **prove** (in this template: `verify-potencia-stack`). Run what they require. Package scripts go through **pnpm** (`pnpm doctor`, `pnpm smoke`, `pnpm typecheck`). Never npm or yarn.
 
-Put the result in the PR body and attach evidence: screenshots for UI, a short video when the flow is interactive.
+Put the result in **that same sub-PR** and attach evidence: screenshots for UI, a short video when the flow is interactive. Do not open a follow-up screenshots-only PR. If capture is blocked, the implementation PR stays incomplete — that is a blocker, not a later proof heading. Several pages: each page's evidence on that page's PR.
 
 ### 6. Feature complete → PR to `main`
 
