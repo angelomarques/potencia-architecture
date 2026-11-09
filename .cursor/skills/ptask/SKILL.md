@@ -1,9 +1,10 @@
 ---
 name: ptask
 description: >-
-  Orchestrates a whole task by spawning one sub-agent per docs sub-task,
+  Orchestrates a whole task by spawning one sub-agent per spawn slice,
   waiting for each to finish and open its PR before starting the next.
-  Each slice runs in its own git worktree. Use when the user invokes /ptask
+  Each spawn slice runs in its own git worktree. Proof/screenshots headings
+  fold onto owning implementation PRs. Use when the user invokes /ptask
   or asks to run an entire task through /sub-task.
 disable-model-invocation: true
 ---
@@ -12,14 +13,14 @@ disable-model-invocation: true
 
 Parent **orchestrates**. It does not implement product code. Each slice is one sub-agent.
 
-A task is the parent file in `docs/tasks/` plus the `###` groups in `docs/sub-tasks/`. One group → one sequential PR. **Never spawn two sub-task agents in the same turn.**
+A task is the parent file in `docs/tasks/` plus the `###` groups in `docs/sub-tasks/`. **Never spawn two sub-task agents in the same turn.** Do not treat every `###` as a PR.
 
-Slice agents do **not** share a working tree. Prepare one linked git worktree per slice with [worktree.sh](scripts/worktree.sh). Do not switch the shared checkout. A dirty shared checkout is left as it is.
+Slice agents do **not** share a working tree. Prepare one linked git worktree per **spawn** slice with [worktree.sh](scripts/worktree.sh). Do not switch the shared checkout. A dirty shared checkout is left as it is.
 
 ```
-- [ ] 1. Resolve the task and queue every ### slice
+- [ ] 1. Resolve the task, classify every ### heading, fold proof/screenshots onto owners
 - [ ] 2. Confirm the feature branch + tracker PR (create both if missing) without switching the shared checkout
-- [ ] 3. For each slice, in order: prepare one worktree, spawn one agent into that path, wait, record the PR
+- [ ] 3. For each spawn slice, in order: prepare one worktree, spawn one agent into that path, wait, record the PR
 - [ ] 4. If a slice fails, stop and leave that worktree in place
 - [ ] 5. Hand back every PR URL and worktree path
 ```
@@ -32,6 +33,7 @@ Slice agents do **not** share a working tree. Prepare one linked git worktree pe
 - [verify-potencia-stack](../verify-potencia-stack/SKILL.md) — proof after code (via sub-task), run from the slice worktree
 - [worktree.sh](scripts/worktree.sh) — create, resume, inspect, and remove worktrees
 - [worktree-test.sh](scripts/worktree-test.sh) — disposable-repo proof of the helper
+- [queue-slices.py](scripts/queue-slices.py) — classify headings (spawn / fold / block)
 
 ## 1. Queue
 
@@ -39,11 +41,24 @@ Take the task id from the user. Find the parent file in `docs/tasks/` and the ma
 
 `<base>` is the long-lived feature branch `feature/<short-name>` from [feature-branch-workflow](../feature-branch-workflow/SKILL.md). The task **Branch** must be that same ref. Do not invent a second branch name.
 
-A slice is one `###` heading in the sub-task doc, in document order. Skip a heading whose checkboxes are all `[x]`.
+Classify the sub-task file. Do not photocopy headings into PRs:
 
-For each remaining slice record the heading, the slug, the branch `<base>/<slug>`, and the doc path.
+```bash
+python3 .cursor/skills/ptask/scripts/queue-slices.py docs/sub-tasks/<file>.md
+```
 
-Empty queue (all done or no `###` headings): stop.
+| `action` | What to do |
+| --- | --- |
+| `spawn` | One worktree, one sub-agent, one PR. Implementation slices include verification and screenshots **in that PR**. Explicit docs/test/infra work and an explicit standalone audit may spawn without product UI. |
+| `fold` | Later QA/proof/screenshots-only heading. Do **not** prepare a worktree, branch, or PR. Put its evidence on the `route_to` owners. Several pages → each page's evidence on that page's PR, never one combined proof PR. |
+| `block` | No-op or evidence-only with no owner. Report it. Do not spawn. |
+| `skip` | Heading already `[x]`. Do not spawn. A fold that routes here updates that owner PR if it is still open; if it is merged, that evidence is a blocker, not a new PR. |
+
+Skip a heading whose checkboxes are all `[x]` (`action: skip`). For each **spawn** slice record the heading, the slug, the branch `<base>/<slug>`, the doc path, and any `folded_from` headings.
+
+Empty spawn queue (all done, all folded, or no `###` headings): stop. Folded evidence still due on an open owner PR is not a new slice — resume that owner.
+
+When writing a plan, do not add a trailing `### Proof screenshots` / visual-QA group. Put evidence checkboxes on each implementation heading.
 
 ## 2. Feature branch
 
@@ -81,7 +96,7 @@ Slot rule: replace each `/` in the branch with `--`. Reuse that exact slot when 
 
 ## 3. Sequential sub-agents
 
-For **each** queued slice, prepare **one** worktree, spawn **one** Task, then wait until it returns. Only then start the next.
+For **each spawn** slice, prepare **one** worktree, spawn **one** Task, then wait until it returns. Only then start the next. Do not prepare a worktree for `fold` or `block` headings.
 
 ```bash
 .cursor/skills/ptask/scripts/worktree.sh prepare \
@@ -117,6 +132,9 @@ Skills (read these files): <skill_root>
 Helper: <skill_root>/ptask/scripts/worktree.sh
 
 Slice only: <heading text>
+Kind: <implement | docs | tests | infra | audit>
+Needs evidence on this PR: <yes for implement>
+Folded evidence from: <fold headings that route here, or none>
 Doc: docs/sub-tasks/<file>.md
 Parent task: docs/tasks/<file>.md
 Base: <base>
@@ -126,12 +144,15 @@ Your branch: <base>/<slug>
 
 Do not implement sibling ### groups. Do not merge. Do not deploy.
 Do not remove the worktree if you fail. Do not pass --force to the helper.
+Do not open a screenshots-only, evidence-only, or empty PR.
+For implement slices, verification and screenshots belong in THIS PR. If capture is blocked or evidence is missing, return a blocker and no PR URL. Do not fake a pass or open a placeholder PR.
 
 When done, return:
 - branch name
 - worktree path
-- PR URL
+- PR URL (only if the slice is ready for review)
 - verify-potencia-stack command + exit code (run from the worktree)
+- evidence: present | missing | blocked | not-required
 - one-line summary
 If you cannot finish, return the blocker, the worktree path, and no PR URL.
 ```
@@ -156,16 +177,16 @@ If the previous slice is **already merged** into `<base>`, drop the override: `-
 
 ### After each agent
 
-Require a PR URL. Record: slice id, branch, worktree path, PR URL.
+Require a PR URL only when the slice is ready for review. Record: slice id, branch, worktree path, PR URL, evidence status.
 
-- **No PR URL or verify failed:** stop. Do not spawn the next slice. Do not cleanup. Report the blocker and the worktree path.
-- **Success:** spawn the next slice with the new previous branch + PR URL. Cleanup is optional and only through the helper, after the branch is pushed. If cleanup refuses, leave the worktree and still report the PR.
+- **No PR URL, verify failed, or implement evidence missing/blocked:** stop. Do not spawn the next slice. Do not cleanup. Do not spawn a follow-up proof/screenshots slice to "finish" it. Report the blocker and the worktree path.
+- **Success:** spawn the next **spawn** slice with the new previous branch + PR URL. Cleanup is optional and only through the helper, after the branch is pushed. If cleanup refuses, leave the worktree and still report the PR.
 
 Never `gh pr merge`. Never `gh pr ready` on the tracker.
 
 ## Resume
 
-Running the same slice again uses the same slot and branch. `prepare` returns `action: resumed` and the same `path`. Keep uncommitted files and unpushed commits. Do not create a second worktree or a second branch name.
+Running the same spawn slice again uses the same slot and branch. `prepare` returns `action: resumed` and the same `path`. Keep uncommitted files and unpushed commits. Do not create a second worktree or a second branch name. Re-running a fold heading resumes the owner slots, never a new proof branch.
 
 ## Cleanup
 
@@ -186,6 +207,8 @@ List every PR and worktree path in queue order. Remind: reviewer approves each; 
 - Parallel sub-task agents, or a second spawn before the previous returned.
 - Parent implementing product code instead of spawning.
 - Switching, committing, or editing the shared checkout.
+- Spawning a worktree, branch, or PR for a fold/block heading (proof/screenshots/QA-only, no-op, empty).
+- A combined proof PR that gathers screenshots for several implementation slices.
 - A later slice branched from `main` or from `<base>` while the previous PR is still open (missing the prior commits).
 - Continuing after a failed slice, or deleting that slice's worktree.
 - A second slot or branch for a slice that already has one.
